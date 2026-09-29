@@ -17,10 +17,11 @@ sudo crontab -l | grep -v filemonitor.sh | grep -v "^# File Monitor" | crontab -
 2) размер файла больше N байт
 3) MD5-сумма файла совпадает с заданной
 
-Эти критерии задаются в отдельном файле. Например:
-REGEX='^virus.com$'
-SIZE=102400
-MD5='a8d8e05598f07a83e85bca06f20b5f61 d41d8cd98f00b204e9800998ecf8427e'
+Эти критерии задаются в отдельном файле. 
+Например:
+  REGEX='^virus.com$'
+  SIZE=102400
+  MD5='a8d8e05598f07a83e85bca06f20b5f61 d41d8cd98f00b204e9800998ecf8427e'
 
 MD5-сумм может быть больше одной.
 
