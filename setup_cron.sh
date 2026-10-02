@@ -1,8 +1,22 @@
 #!/bin/bash
 set -euo pipefail
 
-cp filemonitor.sh /usr/local/bin/filemonitor.sh
-cp filemonitor.conf /etc/filemonitor.conf
+# Проверяем существование 
+if [[ ! -f "./mail_app_pass" ]]; then
+    echo "Error: no mail app pass" >&2
+    exit 1
+fi
+
+if [[ ! -x "./mail.sh" ]]; then
+    echo "Error: no mail.sh" >&2
+    exit 1
+fi
+
+mkdir -p /usr/local/filemonitor
+cp ./mail_app_pass /usr/local/filemonitor
+cp ./mail.sh /usr/local/filemonitor
+cp ./filemonitor.sh /usr/local/bin/filemonitor.sh
+cp ./filemonitor.conf /etc/filemonitor.conf
 
 chmod +x /usr/local/bin/filemonitor.sh
 

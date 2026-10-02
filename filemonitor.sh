@@ -105,6 +105,8 @@ get_file_size() {
 declare -a found_files=()
 declare -a found_reasons=()
 
+echo "start scanning $MONITOR_DIR..."
+
 while IFS= read -r -d '' file; do
     filename="${file##*/}"
     matched=false
@@ -145,6 +147,7 @@ while IFS= read -r -d '' file; do
     if [[ "$matched" == true ]]; then
         found_files+=("$file")
         found_reasons+=("$reason")
+        echo "matched: $file  reason: $reason" 
     fi
 done < <(find "$MONITOR_DIR" -type f -print0)
 
@@ -153,8 +156,23 @@ timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
 
 logger -t "$LOGGER_TAG" \
     "Scan completed: $found_count files matched criteria in $MONITOR_DIR"
+echo "Scan completed: $found_count files matched criteria in $MONITOR_DIR"
 
 if [[ "$found_count" -gt 0 ]]; then
+
+    echo "Sending alert to system log..."
+    for i in "${!found_files[@]}"; do
+        logger -t "$LOGGER_TAG" \
+            "MATCH: ${found_files[$i]} (${found_reasons[$i]})"
+    done
+
+    echo "Sending email alert..."
+    MAIL_APP="/usr/local/filemonitor/mail.sh"
+    if [[ ! -x "$MAIL_APP" ]]; then
+        echo "Error: no $MAIL_APP" >&2
+        exit 1
+    fi
+
     {
         printf '%s\n' "File Monitor Alert"
         printf '%s\n' "=================="
@@ -182,12 +200,7 @@ if [[ "$found_count" -gt 0 ]]; then
         else
             printf '%s\n' "MD5 values: disabled"
         fi
-    } | mail -s "$EMAIL_SUBJECT" "$EMAIL_TO"
-
-    for i in "${!found_files[@]}"; do
-        logger -t "$LOGGER_TAG" \
-            "MATCH: ${found_files[$i]} (${found_reasons[$i]})"
-    done
+    } | $($MAIL_APP $EMAIL_TO $EMAIL_SUBJECT)
 fi
 
 exit 0
